@@ -32,6 +32,42 @@ app.delete("/api/notes/:id", function(req, res) {
     res.end();
 });
 
+function addToFile(newNote) {
+    let allNotes = [];
+    readDataBase(function(err, data) {
+        if (data.length > 0) {
+            allNotes = data;
+        };
+        allNotes.push(newNote);
+        writeDataBase(allNotes);
+    });
+};
+
+function writeDataBase(data) {
+    fs.writeFile("db/db.json", JSON.stringify(data), function(err) {
+        if (err) {
+            console.log(err);
+        };
+    });
+};
+
+function readDataBase(callback) {
+    fs.readFile("db/db.json", function(err, data) {
+        if (err) {
+            console.log(err)
+        };
+        if (data.length > 0) {
+            let notesString = data.toString("utf-8");
+            let notesJSON = JSON.parse(notesString);
+            for (i = 0; i < notesJSON.length; i++) {
+                let note = notesJSON[i]
+                note.id = i;
+            };
+            callback(null, notesJSON);
+        } else callback(null, data);
+    });
+}
+
 app.listen(PORT, function() {
     console.log("listening on port: " + PORT);
 });
